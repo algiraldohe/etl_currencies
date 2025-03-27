@@ -1,0 +1,60 @@
+services:
+  webserver:
+    networks:
+      - feversnet
+
+  scheduler:
+    networks:
+      - feversnet
+
+  triggerer:
+    networks:
+      - feversnet
+
+  postgres-db-setup:
+    image: etl-currecy/db-setup
+    build:
+      context: ./postgres-db-setup
+      dockerfile: Dockerfile
+    command: sh -c ".venv/bin/python -m alembic upgrade head && tail -f /dev/null"
+    env_file:
+      - ./.env
+    volumes:
+      - ./postgres_db_setup:/app
+      - ./include/shared_models:/app/shared_models
+    container_name: postgres-db-setup
+    depends_on:
+      - etl-currency-postgres-db
+    networks:
+      - feversnet
+
+  etl-currency-postgres-db:
+    image: postgres
+    restart: always
+    container_name: etl-currency-postgres-db
+    hostname: etl-currency-postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: currencies
+    volumes:
+      - postgres_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: /usr/bin/pg_isready -U postgres -d currencies
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    ports:
+      - "5435:5432"
+    networks:
+      - feversnet
+
+volumes:
+  postgres_db_setup:
+  include_shared_models:
+  postgres_db_data:
+
+networks:
+  feversnet:
+    driver: bridge
+    
