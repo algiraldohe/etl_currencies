@@ -11,6 +11,27 @@ services:
     networks:
       - feversnet
 
+  minio:
+    image: minio/minio
+    container_name: minio
+    hostname: minio
+    restart: always
+    volumes:
+      - ./include/storage/data/minio:/data
+    ports:
+      - 9000:9000
+      - 9001:9001
+    env_file:
+      - ./.env
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - feversnet
+
   postgres-db-setup:
     image: etl-currecy/db-setup
     build:
