@@ -8,6 +8,9 @@ transforms the data, and loads it into a database.
 
 from airflow.decorators import dag, task
 from datetime import datetime
+from include.extraction.pullers import APILayer
+from include.helpers.data_storage import MinIOStorage
+from include.extraction.domain import extract_currencies
 import logging
 
 @dag(
@@ -15,7 +18,7 @@ import logging
     schedule="@daily",
     catchup=False,
     doc_md=__doc__,
-    default_args={"owner": "algiraldohe", "retries": 1},
+    default_args={"owner": "algiraldohe"},
     tags=["etl", "finance", "data_engineering"],
 )
 def currency_exchange():
@@ -25,7 +28,11 @@ def currency_exchange():
     @task
     def extract():
         logger.info(" START DAG :: Executing the extraction process...")
-        return "This is the extraction process"
+
+        puller = APILayer()
+        storage = MinIOStorage()
+
+        return extract_currencies(puller=puller, storage=storage)
     
     @task
     def transform():
