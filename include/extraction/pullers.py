@@ -6,6 +6,7 @@ from include.helpers.process_type import ProcessType
 import json
 import yaml
 import logging
+from include.helpers.config import config
 
 
 ENDPOINT_TABLE = {
@@ -29,8 +30,7 @@ class RequestBuilder:
 
     API_URL = Variable.get("api_url")
     API_KEY = os.getenv("API_LAYER_KEY")
-    with open(Variable.get("currency_exchange_config"), "r") as f:
-        CONFIG = yaml.safe_load(f)
+    CONFIG = config.CURRENCIES_CONFIG
 
 
     def __init__(self):
@@ -96,11 +96,9 @@ class APILayer(PullerAPI):
 
         if builder.exec_type == ProcessType.BULK:
             request = builder.get_historical(ENDPOINT_TABLE[builder.exec_type])
-            print("OUTPUT_REQUEST:", request)
 
         elif builder.exec_type == ProcessType.DAILY:
             request = builder.get_live(ENDPOINT_TABLE[builder.exec_type])
-            print("OUTPUT_REQUEST:", request)
 
         try:
             return requests.get(request["url"], headers=request["headers"])

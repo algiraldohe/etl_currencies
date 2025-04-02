@@ -1,6 +1,7 @@
 from datetime import datetime
 from include.extraction.pullers import PullerAPI
 from include.helpers.data_storage import DataStorage
+from include.helpers.config import config
 from airflow.models import Variable
 import logging
 
@@ -20,8 +21,9 @@ def extract_currencies(puller: PullerAPI, storage: DataStorage) -> str:
     date_name = datetime.now().strftime("%Y-%m-%d")
     partition_state = Variable.get("source-prefix")
     name = Variable.get("name")
+    execution_type = config.CURRENCIES_CONFIG.get("process")[0]["execution"]
 
-    filepath = f'{partition_state}/{partition_year}/{partition_month}/{date_name}_{name}.json'
+    filepath = f'{execution_type}/{partition_state}/{partition_year}/{partition_month}/{date_name}_{name}.json'
     response = puller.get_data()
     data = response.json()
     try:
