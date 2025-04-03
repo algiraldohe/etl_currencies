@@ -77,7 +77,7 @@ class MinIOStorage(DataStorage):
         # Implement the logic to read data from MinIO
         object_name = source
         try:
-            response = self.client.get_object( self.bucket_name, object_name)
+            response = self.client.get_object(self.bucket_name, object_name)
             yield response  # Yield the response to the 'with' block
 
         except Exception as e:
@@ -103,7 +103,7 @@ class MinIOStorage(DataStorage):
             logger.error(f"MinIO bucket operation failed: {e}")
             raise
 
-    def write_data(self, data: dict, destination: str):
+    def write_data(self, data: Union[dict, bytes], destination: str):
         """
         Write data to MinIO using a context manager for safety.
         
@@ -115,7 +115,10 @@ class MinIOStorage(DataStorage):
             raise ValueError("MinIO cannot write data if empty")
         
         # Convert data to JSON bytes
-        data_bytes = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        if isinstance(data, dict):
+            data_bytes = json.dumps(data, ensure_ascii=False).encode("utf-8")
+
+        data_bytes = data
 
         # Use context managers for bucket safety and resource cleanup
         with self._ensure_bucket(), BytesIO(data_bytes) as buffer:

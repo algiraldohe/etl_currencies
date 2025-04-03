@@ -39,8 +39,9 @@ def currency_exchange():
     def transform(filepath: str):
         logger.info(" PROCESSING DAG :: Executing the transformation process...")
 
-        # storage = MinIOStorage()
-        return "This is the transformation process"
+        storage = MinIOStorage()
+        logger.info(f"Processing file: {filepath}")
+        return transform_currencies(storage=storage, filepath=filepath)
         
 
     
@@ -50,7 +51,8 @@ def currency_exchange():
         return "This is the loading process"
     
     
-    extract() >> transform(filepath='/text') >> load()
+    # extract() >> transform(filepath='{{ ti.xcom_pull(task_ids="extract") }}') >> load()
+    transform(filepath="daily/src/2025/4/2025-04-03_currencies.json")
 
 
 currency_exchange()
