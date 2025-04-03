@@ -11,6 +11,7 @@ from datetime import datetime
 from include.extraction.pullers import APILayer
 from include.helpers.data_storage import MinIOStorage
 from include.extraction.domain import extract_currencies
+from include.transformation.domain import transform_currencies
 import logging
 
 @dag(
@@ -35,8 +36,12 @@ def currency_exchange():
         return extract_currencies(puller=puller, storage=storage)
     
     @task
-    def transform():
-        return "This is the transformation process"
+    def transform(filepath: str):
+        logger.info(" PROCESSING DAG :: Executing the transformation process...")
+
+        storage = MinIOStorage()
+        
+
     
     @task
     def load():
