@@ -39,7 +39,8 @@ def currency_exchange():
     def transform(filepath: str):
         logger.info(" PROCESSING DAG :: Executing the transformation process...")
 
-        storage = MinIOStorage()
+        # storage = MinIOStorage()
+        return "This is the transformation process"
         
 
     
@@ -49,7 +50,7 @@ def currency_exchange():
         return "This is the loading process"
     
     
-    extract() >> transform() >> load()
+    extract() >> transform(filepath='/text') >> load()
 
 
 currency_exchange()
