@@ -11,6 +11,7 @@ from datetime import datetime
 from include.extraction.pullers import APILayer
 from include.helpers.data_storage import MinIOStorage
 from include.extraction.domain import extract_currencies
+from include.transformation.domain import transform_currencies
 import logging
 
 @dag(
@@ -35,8 +36,14 @@ def currency_exchange():
         return extract_currencies(puller=puller, storage=storage)
     
     @task
-    def transform():
-        return "This is the transformation process"
+    def transform(filepath: str):
+        logger.info(" PROCESSING DAG :: Executing the transformation process...")
+
+        storage = MinIOStorage()
+        logger.info(f"Processing file: {filepath}")
+        return transform_currencies(storage=storage, filepath=filepath)
+        
+
     
     @task
     def load():
@@ -44,7 +51,9 @@ def currency_exchange():
         return "This is the loading process"
     
     
-    extract() >> transform() >> load()
+    # extract() >> transform(filepath='{{ ti.xcom_pull(task_ids="extract") }}') >> load()
+    # transform(filepath="bulk/src/2025/4/2025-04-04_currencies.json")
+    transform(filepath="daily/src/2025/4/2025-04-04_currencies.json")
 
 
 currency_exchange()

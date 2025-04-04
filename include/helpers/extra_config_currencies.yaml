@@ -30,3 +30,29 @@ currencies:
   - TWD
   - THB
   - MYR
+
+mapping:
+  USDEUR: "rate_eur"
+  USDJPY: "rate_jpy"
+  USDGBP: "rate_gbp"
+  USDAUD: "rate_aud"
+  USDCAD: "rate_cad"
+  USDCHF: "rate_chf"
+  USDCNY: "rate_cny"
+  USDSEK: "rate_sek"
+  USDMXN: "rate_mxn"
+  USDNZD: "rate_nzd"
+  USDSGD: "rate_sgd"
+  USDHKD: "rate_hkd"
+  USDNOK: "rate_nok"
+  USDKRW: "rate_krw"
+  USDTRY: "rate_try"
+  USDINR: "rate_inr"
+  USDRUB: "rate_rub"
+  USDBRL: "rate_brl"
+  USDZAR: "rate_zar"
+  USDDKK: "rate_dkk"
+  USDPLN: "rate_pln"
+  USDTWD: "rate_twd"
+  USDTHB: "rate_thb"
+  USDMYR: "rate_myr"

@@ -27,7 +27,7 @@ def extract_currencies(puller: PullerAPI, storage: DataStorage) -> str:
     response = puller.get_data()
     data = response.json()
     try:
-        storage.write(data=data, destination=filepath)
+        storage.write_data(data=data, destination=filepath)
 
     except Exception as e:
         logger.error(f"Error writing data to MinIO: {e}")
