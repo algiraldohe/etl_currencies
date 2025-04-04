@@ -52,7 +52,8 @@ def currency_exchange():
     
     
     # extract() >> transform(filepath='{{ ti.xcom_pull(task_ids="extract") }}') >> load()
-    transform(filepath="daily/src/2025/4/2025-04-03_currencies.json")
+    # transform(filepath="bulk/src/2025/4/2025-04-04_currencies.json")
+    transform(filepath="daily/src/2025/4/2025-04-04_currencies.json")
 
 
 currency_exchange()

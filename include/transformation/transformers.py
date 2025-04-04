@@ -31,27 +31,35 @@ class CurrenciesTransformer:
 
     def json_to_csv(self, data: dict) -> bytes:
 
-        fieldnames = list(CurrenciesTransformer.CONFIG.get("mapping").keys())
+        fieldnames = ["timestamp"] + list(CurrenciesTransformer.CONFIG.get("mapping").keys())
         csv_buffer = StringIO()
         writer = csv.DictWriter(csv_buffer, fieldnames=fieldnames)
         writer.writeheader()
 
+        data = self.filter_formatted_data_by_currency(data)
+
         for row in data.items():
-            writer.writerow(row[1])
+            writer.writerow({"timestamp": row[0], **row[1]})
 
         csv_bytes = csv_buffer.getvalue().encode("utf-8")
         csv_buffer.close()
 
         return csv_bytes
          
+    def filter_formatted_data_by_currency(self, data:dict) -> dict:
+        currency_tickers = list(self.CONFIG.get("mapping").keys())
+        keys = list(data.keys())
+        for key in keys:
+            data[key] = {ticker: data[key][ticker] for ticker in currency_tickers if ticker in data[key]}
 
-def format_timestamp_to_datetime( timestamp:str) -> str:
+        return data
+
+
+def format_timestamp_to_datetime(timestamp:int) -> str:
         dt = datetime.fromtimestamp(timestamp)
-        return dt.strftime("%Y-%m-%d %H:%M:%S")
+        return dt.strftime("%Y-%m-%d")
     
 
-def filter_by_currency(data:str) -> Tuple[str, str]:
-    pass
 
 def structure_as_tabular(data:str) -> Any:
     pass

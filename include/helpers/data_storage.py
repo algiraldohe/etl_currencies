@@ -111,14 +111,14 @@ class MinIOStorage(DataStorage):
             data: Dict to be written as JSON.
             destination: Object path in the bucket (e.g., "folder/file.json").
         """
+        data_bytes = data
+
         if not data:
             raise ValueError("MinIO cannot write data if empty")
         
         # Convert data to JSON bytes
         if isinstance(data, dict):
-            data_bytes = json.dumps(data, ensure_ascii=False).encode("utf-8")
-
-        data_bytes = data
+            data_bytes = json.dumps(data, ensure_ascii=False).encode("utf-8")       
 
         # Use context managers for bucket safety and resource cleanup
         with self._ensure_bucket(), BytesIO(data_bytes) as buffer:
