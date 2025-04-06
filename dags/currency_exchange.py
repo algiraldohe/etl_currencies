@@ -9,9 +9,10 @@ transforms the data, and loads it into a database.
 from airflow.decorators import dag, task
 from datetime import datetime
 from include.extraction.pullers import APILayer
-from include.helpers.data_storage import MinIOStorage
+from include.helpers.data_storage import MinIOStorage, PostgresStorage
 from include.extraction.domain import extract_currencies
 from include.transformation.domain import transform_currencies
+from include.loading.domain import load_currencies_data
 import logging
 
 @dag(
@@ -48,6 +49,7 @@ def currency_exchange():
     @task
     def load():
         logger.info(" END DAG :: Executing the load process...")
+        storage = PostgresStorage()
         return "This is the loading process"
     
     

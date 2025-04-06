@@ -10,6 +10,8 @@ from airflow.models import Variable
 import json
 import os
 import logging
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,58 @@ class DataStorage(ABC):
     @abstractmethod
     def write_data(self, data: Union[str, pd.DataFrame], destination: str):
         pass
+
+class PostgresStorage(DataStorage):
+    
+    def __init__(self):
+        self._connection = BaseHook.get_connection('currencies-postgres-db')
+        self._engine = None
+        self._session_factory = None
+
+    @property
+    def engine(self):
+        if self._engine is None:
+            DATABASE_URL = f"postgresql+psycopg2://{self._connection.login}:{self._connection.password}@{self._connection.host}:{self._connection.port}/{self._connection.schema}"
+            logger.info(f"Connecting to database: {DATABASE_URL}")
+            self._engine = create_engine(DATABASE_URL)
+
+    @property
+    def session_factory(self):
+        if self._session_factory is None:
+            self._session_factory = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        return self._session_factory
+    
+    @contextmanager
+    def session_scope(self):
+        session = self.session_factory()
+        try:
+            yield session
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Session rolled back due to error: {e}")
+        finally:
+            session.close()
+
+    def get_data(self, source):
+        pass
+
+    def write_data(self, data: Union[str, pd.DataFrame], destination: str):
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Postgres write_data expects a pandas DataFrame")
+        
+        try:
+            data.to_sql(destination, self.engine, if_exists='append', index=False)
+        except Exception as e:
+            logger.error(f"Error writing data to Postgres: {e}")
+            raise
+
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.db.close()
 
 
 class MinIOStorage(DataStorage):
