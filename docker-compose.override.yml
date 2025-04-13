@@ -45,7 +45,8 @@ services:
       - ./include/shared_models:/app/shared_models
     container_name: postgres-db-setup
     depends_on:
-      - etl-currency-postgres-db
+      etl-currency-postgres-db:
+        condition: service_healthy
     networks:
       - feversnet
 
@@ -71,8 +72,6 @@ services:
       - feversnet
 
 volumes:
-  postgres_db_setup:
-  include_shared_models:
   postgres_db_data:
 
 networks:

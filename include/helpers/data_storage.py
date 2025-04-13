@@ -42,12 +42,14 @@ class PostgresStorage(DataStorage):
             DATABASE_URL = f"postgresql+psycopg2://{self._connection.login}:{self._connection.password}@{self._connection.host}:{self._connection.port}/{self._connection.schema}"
             logger.info(f"Connecting to database: {DATABASE_URL}")
             self._engine = create_engine(DATABASE_URL)
+        
+        return self._engine
 
     @property
     def session_factory(self):
         if self._session_factory is None:
             self._session_factory = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
-        return self._session_factory
+            return self._session_factory
     
     @contextmanager
     def session_scope(self):
@@ -58,6 +60,7 @@ class PostgresStorage(DataStorage):
         except Exception as e:
             session.rollback()
             logger.error(f"Session rolled back due to error: {e}")
+            raise
         finally:
             session.close()
 
@@ -69,7 +72,9 @@ class PostgresStorage(DataStorage):
             raise ValueError("Postgres write_data expects a pandas DataFrame")
         
         try:
-            data.to_sql(destination, self.engine, if_exists='append', index=False)
+            with self.engine.begin() as conn:
+                data.to_sql(destination, conn, if_exists='append', index=False, method='multi')
+
         except Exception as e:
             logger.error(f"Error writing data to Postgres: {e}")
             raise
