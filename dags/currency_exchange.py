@@ -9,9 +9,10 @@ transforms the data, and loads it into a database.
 from airflow.decorators import dag, task
 from datetime import datetime
 from include.extraction.pullers import APILayer
-from include.helpers.data_storage import MinIOStorage
+from include.helpers.data_storage import MinIOStorage, PostgresStorage
 from include.extraction.domain import extract_currencies
 from include.transformation.domain import transform_currencies
+from include.loading.domain import load_currencies_data
 import logging
 
 @dag(
@@ -46,14 +47,16 @@ def currency_exchange():
 
     
     @task
-    def load():
+    def load(filepath: str):
         logger.info(" END DAG :: Executing the load process...")
-        return "This is the loading process"
+        storage = PostgresStorage()
+        object_storage = MinIOStorage()
+        logger.info(f"Processing file: {filepath}")
+        return load_currencies_data(filepath=filepath, storage=storage, object_storage = object_storage)
     
     
-    # extract() >> transform(filepath='{{ ti.xcom_pull(task_ids="extract") }}') >> load()
-    # transform(filepath="bulk/src/2025/4/2025-04-04_currencies.json")
-    transform(filepath="daily/src/2025/4/2025-04-04_currencies.json")
+    extract() >> transform(filepath='{{ ti.xcom_pull(task_ids="extract") }}') >> load(filepath='{{ ti.xcom_pull(task_ids="transform") }}')
+    # transform(filepath="daily/src/2025/4/2025-04-13_currencies.json") >> load('{{ ti.xcom_pull(task_ids="transform") }}')
 
 
 currency_exchange()
