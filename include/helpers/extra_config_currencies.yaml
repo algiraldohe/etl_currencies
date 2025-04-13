@@ -1,9 +1,9 @@
 reference_currency: "USD"
 
 process: 
-  - execution: daily  # one between (daily, bulk)
-  - start_date: 2025-01-01 # format: YYYY-MM-DD (Only for bulk_update)
-  - end_date: 2025-01-02 # format: YYYY-MM-DD (Only for bulk_update)
+  - execution: bulk  # one between (daily, bulk)
+  - start_date: 2025-04-01 # format: YYYY-MM-DD (Only for bulk_update)
+  - end_date: 2025-04-13 # format: YYYY-MM-DD (Only for bulk_update)
 
 currencies:
   - EUR

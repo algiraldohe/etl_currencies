@@ -29,7 +29,6 @@ def load_currencies_data(filepath:str, storage: DataStorage, *, object_storage: 
     df = df[["timestamp", "reference_currency", ref_column] + list(columns.values())]
     # TODO: rename this column since the transformation step
     df.rename(columns={"timestamp": "date_key"}, inplace=True)
-    print(df.info())
 
     # then load the data into the postgres database
     with storage.session_scope() as session:
@@ -37,39 +36,37 @@ def load_currencies_data(filepath:str, storage: DataStorage, *, object_storage: 
             query = text(
                 """
                 SELECT 
-                    MIN(date_key) min_date_key, 
-                    MAX(date_key) max_date_key 
+                    DISTINCT date_key
                 FROM currency_exchange_rates
                 """
             )
 
             result = session.execute(query).fetchall()
-            print("QUERY_OUTPUT:", result)
+            date_keys = [row[0] for row in result]
 
         except Exception as e:
             logger.error(f"Error loading data into database: {e}")
             raise
 
         else:
-            if result and all(item is not None for item in result[0]):
-                min_date_key, max_date_key = result[0]
-                logger.info("Existing date_keys: %s - %s", min_date_key, max_date_key)
+            if date_keys:
+                logger.info("Existing date_keys: %s", date_keys)
                 
-                print(df.shape)
-                df = df[~df["date_key"].between(min_date_key, max_date_key, inclusive='both')]
-                print(df.shape)
+                logger.info("Filtering out existing date_keys from the DataFrame. Current shape: %s", df.shape)
+                df = df[~df['date_key'].isin(date_keys)]
+                logger.info("Filtered shape: %s", df.shape)
 
                 if df.empty:
                     message = "No new date_keys to load into the database."
                     logger.info(message)
 
-            else:
-                try:
-                    storage.write_data(data=df, destination="currency_exchange_rates")
-                    logger.info(f"Data loaded into the database. {df.shape[0]} rows inserted.")
+                else:
+                    try:
+                        storage.write_data(data=df, destination="currency_exchange_rates")
+                        logger.info(f"Data loaded into the database. {df.shape[0]} rows inserted :: {df['date_key'].to_list()}")
 
-                except Exception as e:
-                    logger.error("Error inserting DataFrame into Postgres: %s", e)
-                    raise
+                    except Exception as e:
+                        logger.error("Error inserting DataFrame into Postgres: %s", e)
+                        raise
 
     return "Data loaded successfully"

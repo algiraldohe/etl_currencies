@@ -51,12 +51,12 @@ def currency_exchange():
         logger.info(" END DAG :: Executing the load process...")
         storage = PostgresStorage()
         object_storage = MinIOStorage()
+        logger.info(f"Processing file: {filepath}")
         return load_currencies_data(filepath=filepath, storage=storage, object_storage = object_storage)
     
     
-    # extract() >> transform(filepath='{{ ti.xcom_pull(task_ids="extract") }}') >> load()
-    # transform(filepath="bulk/src/2025/4/2025-04-04_currencies.json")
-    transform(filepath="daily/src/2025/4/2025-04-04_currencies.json") >> load('{{ ti.xcom_pull(task_ids="transform") }}')
+    extract() >> transform(filepath='{{ ti.xcom_pull(task_ids="extract") }}') >> load(filepath='{{ ti.xcom_pull(task_ids="transform") }}')
+    # transform(filepath="daily/src/2025/4/2025-04-13_currencies.json") >> load('{{ ti.xcom_pull(task_ids="transform") }}')
 
 
 currency_exchange()
